@@ -1,4 +1,5 @@
 FROM rust:latest AS chef
+RUN cargo install cargo-chef
 WORKDIR /app
 RUN apt update && apt install lld clang -y
 
