@@ -1,4 +1,5 @@
 use secrecy::{ExposeSecret, Secret};
+use sqlx::postgres::PgPoolOptions;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod_email_newsletter::{configuration::DatabaseSettings, startup::run};
@@ -136,17 +137,15 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         ..config.clone()
     };
 
-    let mut connection = PgConnection::connect(
-            &maintenance_settings.connection_string().expose_secret()
-        )
-        .await
-        .expect("Failed to connect to Postgres");
+    let connection = PgPoolOptions::new()
+        .connect_lazy_with(maintenance_settings.connect_options());
+
     connection
         .execute(format!(r#"CREATE DATABASE "{}";"#, config.database_name).as_str())
         .await
         .expect("Failed to create the database");
 
-    let connection_pool = PgPool::connect(&config.connection_string().expose_secret())
+    let connection_pool = PgPool::connect_with(config.connect_options())
         .await
         .expect("Failed to connect to Postgres");
 
