@@ -1,4 +1,4 @@
-FROM rust:latest chef
+FROM rust:latest AS chef
 WORKDIR /app
 RUN apt update && apt install lld clang -y
 
