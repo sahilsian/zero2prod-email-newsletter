@@ -77,10 +77,35 @@ async fn health_check_returns_ok() {
 }
 
 #[actix_web::test]
-async fn subscribe_returns_200_for_valid_form_data() {
+async fn subscribe_returns_400_when_fields_are_present_but_empty() {
     let app = spawn_app().await;
     let client = reqwest::Client::new();
 
+    let test_cases = vec![
+        ("name=sahil", "Name field is empty"),
+        ("email=sahilsiantech%40gmail.com", "Email field is empty"),
+        ("", "Both fields are empty")
+    ];
+
+    for (invalid_case, message) in test_cases {
+        let body = invalid_case;
+
+        let response = client
+            .post(&format!("{}/api/v1/newsletter/subscribe", &app.address))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+            .expect("Failed to execute request.");
+
+        assert_eq!(200, response.status().as_u16(), "The API did not return a 200 OK when the payload was: {}", message);
+    }
+}
+
+#[actix_web::test]
+async fn subscribe_returns_200_for_valid_form_data() {
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
     let body = "name=sahil&email=sahilsiantech%40gmail.com";
     let response = client
         .post(&format!("{}/api/v1/newsletter/subscribe", &app.address))
