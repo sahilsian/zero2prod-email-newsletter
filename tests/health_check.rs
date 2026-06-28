@@ -98,7 +98,7 @@ async fn subscribe_returns_400_when_fields_are_present_but_empty() {
             .await
             .expect("Failed to execute request.");
 
-        assert_eq!(200, response.status().as_u16(), "The API did not return a 200 OK when the payload was: {}", message);
+        assert_eq!(400, response.status().as_u16(), "The API did not return a 200 OK when the payload was: {}", message);
     }
 }
 
